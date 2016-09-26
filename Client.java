@@ -200,30 +200,32 @@ public class Client
             byte[] fdata = new byte[512];
             //op code and block # + fdata
             byte[] pack = new byte[516];
-            
+            // used for cycling through file
             int n;
+            // a and b used for printing packet number without negatives
             int a;
             int b;
+            // data requests are op code 0 3
             pack[0] = 0;
             pack[1] = 3; 
+            // while loop cycles through data in file 512 bytes at a time
             while ((n = in.read(fdata)) != -1) {
-            	//System.out.println("boop");
+            	//setting bytes for packet number converting from int to 2 bytes
             	pack[3] = (byte) (packNum & 0xFF);
             	pack[2] = (byte) ((packNum >> 8) & 0xFF); 
             	packNum ++;
-            	
-            	// WRITE LATER/////////////////////////////////
-            	//System.out.println(pack[515]);
+          // if end of data from file is null then the remaining part of the file was under 512 bytes
             	if (fdata[511] == 0x00){
-            		//for (lenTest = 4; pack[lenTest] != 0x00; lenTest++){
-            		//}
-            		
+            		// resized array to match the remaining bytes in file (from 512 to < 512)
             	    byte[] lastData = resize(fdata);
             	    System.out.println(lastData[3]);
             		System.out.println("data not 512 bytes");
             		System.out.println("Size of this is array is: " + lastData.length);
+            		// copies file data behind opcode and packet number
             		System.arraycopy(lastData, 0, pack, 4, lastData.length);
+            		// resizes final array from 516 to 4 + remaining data from file
             		byte[] lastPack = resize(pack);
+            		// creates final packet
             		createPack(lastPack);
             		 a = lastPack[2];
                 	 b = lastPack[3];
@@ -232,10 +234,10 @@ public class Client
                 	System.out.println(lastPack[4]);
             	}
             	else{
+            	// if file is sending 512 bytes for data
             	System.arraycopy(fdata, 0, pack, 4, fdata.length);
             	createPack(fdata);
             	
-            	///////////////////////////////////////////////
             	 a = pack[2];
             	 b = pack[3];
             	a &= 0xFF;
@@ -253,14 +255,14 @@ public class Client
 
             in.close();
         }
-		
+		// wipes array replacing all elements with null
     public byte [] re (byte[] data){
     	for (int i = 0; i < data.length; i++){
     		data[i] = 0x00;
     	}
     	return data;
     }
-    
+    // resizes arrays to remove null at the end
     public byte[] resize (byte[] data){
     	int i;
     	for(i = 4; i < data.length; i++){
